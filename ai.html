@@ -85,7 +85,8 @@ initializeAppCheck(app, {
 const ai = getAI(app, { backend: new GoogleAIBackend() });
 const model = getGenerativeModel(ai, {
   model: "gemini-4-hydrogen",
-  systemInstruction: "You are Pak Point AI, a helpful, respectful general-information assistant. Give clear, accurate, well-organized answers. Match the user's language unless they choose another language. Support Urdu, Roman Urdu, Saraiki and English. Explain difficult topics simply. Do not claim to be Claude or an official government service. Be transparent when unsure, do not invent current facts, and advise users to verify important information from reliable official sources. Do not request passwords, OTPs, full bank details, or sensitive identity information."
+  systemInstruction: "You are Pak Point AI, a helpful, respectful general-information assistant. Give clear, accurate, concise answers first, then add detail only when needed. Match the user's language unless they choose another language. Support Urdu, Roman Urdu, Saraiki and English. Explain difficult topics simply. Do not claim to be Claude or an official government service. Be transparent when unsure, do not invent current facts, and advise users to verify important information from reliable official sources. Do not request passwords, OTPs, full bank details, or sensitive identity information.",
+  generationConfig: { maxOutputTokens: 1200, temperature: 0.4 }
 });
 let chat = model.startChat();
 let busy = false;
@@ -129,9 +130,17 @@ async function sendMessage(text) {
   messages.scrollTop = messages.scrollHeight;
   setBusy(true);
   try {
-    const result = await chat.sendMessage(languageHint + "\n\nUser's question: " + question);
+    const answerBubble = addMessage("assistant", "");
+    typing.textContent = "Pak Point AI is preparing your answer…";
+    const result = await chat.sendMessageStream(languageHint + "\n\nUser's question: " + question);
+    let answer = "";
+    for await (const chunk of result.stream) {
+      answer += chunk.text();
+      answerBubble.textContent = answer;
+      messages.scrollTop = messages.scrollHeight;
+    }
     typing.remove();
-    addMessage("assistant", result.response.text() || "I couldn't create a text response. Please try again.");
+    if (!answer.trim()) answerBubble.textContent = "I couldn't create a text response. Please try again.";
   } catch (error) {
     typing.remove();
     const message = String(error?.message || error);
