@@ -132,7 +132,8 @@ async function sendMessage(text) {
     } else if (/429|quota|RESOURCE_EXHAUSTED/i.test(message)) {
       help += "\n\nAI usage limit ya quota temporarily complete ho sakta hai. Thori dair baad dobara koshish karein.";
     }
-    addMessage("assistant", help);
+    const safeDetail = message.replace(/AIza[0-9A-Za-z_-]{20,}/g, "[hidden]").slice(0, 500);
+    addMessage("assistant", help + "\n\nError detail: " + safeDetail);
     console.error("Pak Point AI error:", error);
   } finally {
     setBusy(false);
