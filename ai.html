@@ -60,6 +60,7 @@ footer{text-align:center;color:#7a858e;font-size:13px;padding:22px}
 <footer>© 2026 Pak Point. All Rights Reserved.</footer>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app-check.js";
 import { getAI, getGenerativeModel, GoogleAIBackend } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-ai.js";
 
 const firebaseConfig = {
@@ -73,6 +74,14 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+
+// App Check: use the reCAPTCHA Enterprise site key for pak-point.github.io.
+// Do not put a reCAPTCHA secret key in browser code.
+initializeAppCheck(app, {
+  provider: new ReCaptchaEnterpriseProvider("6Ldu0icuAAAAAFcmIlwIES8V_W2mcZUQuZMF5_qt"),
+  isTokenAutoRefreshEnabled: true
+});
+
 const ai = getAI(app, { backend: new GoogleAIBackend() });
 const model = getGenerativeModel(ai, {
   model: "gemini-4-hydrogen",
